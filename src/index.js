@@ -2,7 +2,13 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
-app.use(cors());
+
+// Configurar CORS para permitir solo la URL específica
+const corsOptions = {
+  origin: "https://front-robot-arduino.onrender.com",
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 let ultimoComando = "parar";
