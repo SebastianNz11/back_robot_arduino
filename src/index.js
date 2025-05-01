@@ -32,6 +32,7 @@ app.post("/comando", (req, res) => {
     const { accion } = req.body;
     console.log("Comando recibido:", accion);
     ultimoComando = accion;
+    res.sendStatus(200);
   } catch (error) {
     console.error("Error al recibir el comando:", error);
   }
