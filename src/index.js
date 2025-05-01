@@ -41,15 +41,12 @@ app.post("/comando", (req, res) => {
 // Arduino consulta el comando
 app.get("/leer_comando", (req, res) => {
   try {
-    // Enviar la acción como un objeto JSON
-    const comando = { accion: "adelante" };  // O lo que sea el comando
-    res.json(comando);  // Enviar el comando en formato JSON
+    res.send(ultimoComando);
   } catch (error) {
     console.log(error.message);
     res.status(500).send("Error al leer el comando");
   }
 });
-
 
 app.get("/temperatura", (req, res) => {
   try {
