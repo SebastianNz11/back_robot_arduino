@@ -41,6 +41,7 @@ app.post("/comando", (req, res) => {
 // Arduino consulta el comando
 app.get("/leer_comando", (req, res) => {
   try {
+    res.setHeader('Content-Type', 'text/plain');
     res.send(ultimoComando);
   } catch (error) {
     console.log(error.message);
