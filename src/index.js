@@ -1,62 +1,38 @@
-import express from "express";
-import cors from "cors";
-
+import express from 'express'
 const app = express();
+const port = 3000;
 
-// Configurar CORS para permitir solo la URL específica
-const corsOptions = {
-  origin: "https://front-robot-arduino.onrender.com",
-};
-
-app.use(cors(corsOptions));
+// Middleware para manejar los datos JSON
 app.use(express.json());
 
-let ultimoComando = "parar";
-let ultimaTemperatura = null;
-
-// Recibir temperatura desde Arduino
-app.post("/temperatura", (req, res) => {
+// Recibir temperatura desde Arduino y reenviarla al servidor de Render
+app.post('/temperatura', async (req, res) => {
   try {
-    const { valor } = req.body;
-    ultimaTemperatura = valor;
-    console.log("Temperatura recibida:", valor);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("Error al recibir la temperatura:", error);
+    const response = await fetch('https://back-robot-arduino.onrender.com/temperatura', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+    });
+    res.status(response.status).send(response.statusText);
+  } catch (err) {
+    console.error("Error al reenviar la temperatura:", err);
+    res.status(500).send("Error al reenviar la temperatura");
   }
 });
 
-// Recibir comando desde la web
-app.post("/comando", (req, res) => {
+// Recibir comando desde Arduino y reenviarlo al servidor de Render
+app.get('/leer_comando', async (req, res) => {
   try {
-    const { accion } = req.body;
-    console.log("Comando recibido:", accion);
-    ultimoComando = accion;
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("Error al recibir el comando:", error);
-  }
-});
-
-// Arduino consulta el comando
-app.get("/leer_comando", (req, res) => {
-  try {
-    res.send(ultimoComando);
-  } catch (error) {
-    console.log(error.message);
+    const response = await fetch('https://back-robot-arduino.onrender.com/leer_comando');
+    const comando = await response.text();
+    res.send(comando);
+  } catch (err) {
+    console.error("Error al leer el comando:", err);
     res.status(500).send("Error al leer el comando");
   }
 });
 
-app.get("/temperatura", (req, res) => {
-  try {
-    res.json({ valor: ultimaTemperatura });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).send("Error al leer la temperatura");
-  }
-});
-
-app.listen(4000, () => {
-  console.log("Servidor escuchando en puerto 4000");
+// Iniciar el servidor en el puerto local 3000
+app.listen(port, () => {
+  console.log(`Servidor proxy escuchando en http://localhost:${port}`);
 });
