@@ -16,8 +16,6 @@ app.post('/temperatura', (req, res) => {
   const { valor } = req.body;
   if (typeof valor === 'number') {
     temperaturaActual = valor;
-    console.log(`Temperatura recibida: ${valor}°C`);
-    res.send('Temperatura guardada');
   } else {
     res.status(400).send('Formato incorrecto');
   }
