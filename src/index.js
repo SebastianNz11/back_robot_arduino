@@ -1,38 +1,56 @@
-import express from 'express'
+// backend/index.js
+import express from 'express';
+import cors from 'cors';
+
 const app = express();
 const port = 3000;
 
-// Middleware para manejar los datos JSON
+app.use(cors());
 app.use(express.json());
 
-// Recibir temperatura desde Arduino y reenviarla al servidor de Render
-app.post('/temperatura', async (req, res) => {
-  try {
-    const response = await fetch('https://back-robot-arduino.onrender.com/temperatura', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
-    });
-    res.status(response.status).send(response.statusText);
-  } catch (err) {
-    console.error("Error al reenviar la temperatura:", err);
-    res.status(500).send("Error al reenviar la temperatura");
+let temperaturaActual = null;  // Última temperatura recibida del Arduino
+let comandoActual = 'parar';   // Último comando enviado desde el frontend
+
+// 1. Arduino envía temperatura
+app.post('/temperatura', (req, res) => {
+  const { valor } = req.body;
+  if (typeof valor === 'number') {
+    temperaturaActual = valor;
+    console.log(`Temperatura recibida: ${valor}°C`);
+    res.send('Temperatura guardada');
+  } else {
+    res.status(400).send('Formato incorrecto');
   }
 });
 
-// Recibir comando desde Arduino y reenviarlo al servidor de Render
-app.get('/leer_comando', async (req, res) => {
-  try {
-    const response = await fetch('https://back-robot-arduino.onrender.com/leer_comando');
-    const comando = await response.text();
-    res.send(comando);
-  } catch (err) {
-    console.error("Error al leer el comando:", err);
-    res.status(500).send("Error al leer el comando");
+// 2. Frontend consulta temperatura
+app.get('/temperatura', (req, res) => {
+  if (temperaturaActual !== null) {
+    res.json({ valor: temperaturaActual });
+  } else {
+    res.status(404).json({ error: 'Temperatura no disponible' });
   }
 });
 
-// Iniciar el servidor en el puerto local 3000
+// 3. Frontend envía comando
+app.post('/comando', (req, res) => {
+  const { accion } = req.body;
+  if (typeof accion === 'string') {
+    comandoActual = accion;
+    console.log(`Nuevo comando recibido del frontend: ${accion}`);
+    res.send('Comando actualizado');
+  } else {
+    res.status(400).send('Formato de comando inválido');
+  }
+});
+
+// 4. Arduino lee el comando
+app.get('/leer_comando', (req, res) => {
+  console.log(`Comando enviado al Arduino: ${comandoActual}`);
+  res.send(comandoActual);
+});
+
+// Iniciar servidor
 app.listen(port, () => {
-  console.log(`Servidor proxy escuchando en http://localhost:${port}`);
+  console.log(`Servidor escuchando en http://localhost:${port}`);
 });
