@@ -48,14 +48,14 @@ app.post('/temperatura', async (req, res) => {
     console.log(`Temperatura recibida: ${valor}°C`);
 
     // Verifica si supera los 33°C
-    if (valor > 33 && !llamadaRealizada) {
+    if (valor > 30 && !llamadaRealizada) {
       console.log('Temperatura crítica detectada. Iniciando llamada...');
       await createCall();
       llamadaRealizada = true; // ← MARCAR COMO LLAMADA HECHA
     }
 
     // Si baja la temperatura, se permite una futura llamada
-    if (valor <= 33) {
+    if (valor <= 30) {
       llamadaRealizada = false;
     }
 
