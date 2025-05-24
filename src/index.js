@@ -1,6 +1,9 @@
-// backend/index.js
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import twilio from 'twilio';
+
+dotenv.config();
 
 const app = express();
 const port = 3000;
@@ -8,15 +11,50 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-let temperaturaActual = null;  // Última temperatura recibida del Arduino
-let comandoActual = 'parar';   // Último comando enviado desde el frontend
+// Twilio setup
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = twilio(accountSid, authToken);
+
+// Función flecha que hace la llamada
+const createCall = async () => {
+  try {
+    const call = await client.calls.create({
+      from: '+17127170508', // Número Twilio (verificado)
+      to: '+50235818488',   // Tu número destino (verificado)
+      url: 'http://demo.twilio.com/docs/voice.xml',
+    });
+    console.log('Llamada iniciada, SID:', call.sid);
+  } catch (error) {
+    console.error('Error al realizar la llamada:', error.message);
+  }
+};
+
+// Variables globales
+let temperaturaActual = null;
+let comandoActual = 'parar';
+let llamadaRealizada = false; // ← NUEVA VARIABLE
 
 // 1. Arduino envía temperatura
-app.post('/temperatura', (req, res) => {
+app.post('/temperatura', async (req, res) => {
   const { valor } = req.body;
+
   if (typeof valor === 'number') {
     temperaturaActual = valor;
     console.log(`Temperatura recibida: ${valor}°C`);
+
+    // Verifica si supera los 33°C
+    if (valor > 33 && !llamadaRealizada) {
+      console.log('Temperatura crítica detectada. Iniciando llamada...');
+      await createCall();
+      llamadaRealizada = true; // ← MARCAR COMO LLAMADA HECHA
+    }
+
+    // Si baja la temperatura, se permite una futura llamada
+    if (valor <= 33) {
+      llamadaRealizada = false;
+    }
+
     res.send('Temperatura guardada');
   } else {
     res.status(400).send('Formato incorrecto');
