@@ -1,15 +1,19 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import twilio from 'twilio';
 
-dotenv.config();
+
 
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
+
+console.log('Account SID:', process.env.TWILIO_ACCOUNT_SID);
+console.log('Auth Token:', process.env.TWILIO_AUTH_TOKEN);
+
 
 // Twilio setup
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
