@@ -22,7 +22,7 @@ const createCall = async () => {
       //from: "+17127170508",
       from: "+13024403495",
       to: "+50235818488",
-      url: "http://demo.twilio.com/docs/voice.xml",
+      url: "https://back-robot-arduino.vercel.app/twiml", // URL del TwiML que se ejecutará al contestar la llamada
     });
     console.log("Llamada iniciada, SID:", call.sid);
   } catch (error) {
@@ -80,6 +80,17 @@ app.post("/comando", (req, res) => {
 app.get("/leer_comando", (req, res) => {
   console.log(`Comando enviado al Arduino: ${comandoActual}`);
   res.send(comandoActual);
+});
+
+app.post('/twiml', (req, res) => {
+  res.set('Content-Type', 'text/xml');
+  res.send(`
+    <Response>
+      <Say voice="alice" language="es-ES">
+        He detectado fuego! alerta!.
+      </Say>
+    </Response>
+  `);
 });
 
 // Iniciar servidor
