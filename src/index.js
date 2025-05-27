@@ -19,7 +19,8 @@ let llamadaRealizada = false;
 const createCall = async () => {
   try {
     const call = await client.calls.create({
-      from: "+17127170508",
+      //from: "+17127170508",
+      from: "+19786797598",
       to: "+50235818488",
       url: "http://demo.twilio.com/docs/voice.xml",
     });
